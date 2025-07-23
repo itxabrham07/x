@@ -1,38 +1,107 @@
 import winston from 'winston';
-import { config } from './config.js';
+import { config } from '../config.js';
+import fs from 'fs';
+import path from 'path';
 
-const { combine, timestamp, printf, colorize, errors } = winston.format;
+const { combine, timestamp, printf, colorize, errors, json } = winston.format;
 
-const customFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level}]: ${stack || message}`;
+// Ensure log directory exists
+if (config.logging.enableFile && !fs.existsSync(config.logging.logDir)) {
+  fs.mkdirSync(config.logging.logDir, { recursive: true });
+}
+
+// Custom format for console
+const consoleFormat = printf(({ level, message, timestamp, stack, ...meta }) => {
+  const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+  return `${timestamp} [${level.toUpperCase()}]: ${stack || message} ${metaStr}`;
 });
 
-export const logger = winston.createLogger({
-  level: config.app.logLevel,
-  format: combine(
-    errors({ stack: true }),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    customFormat
-  ),
-  transports: [
+// Custom format for file
+const fileFormat = combine(
+  timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  errors({ stack: true }),
+  json()
+);
+
+// Create transports array
+const transports = [];
+
+// Console transport
+if (config.logging.enableConsole) {
+  transports.push(
     new winston.transports.Console({
+      level: config.logging.level,
       format: combine(
         colorize(),
-        customFormat
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        errors({ stack: true }),
+        consoleFormat
       )
-    }),
-    new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error'
-    }),
-    new winston.transports.File({
-      filename: 'logs/combined.log'
     })
-  ]
+  );
+}
+
+// File transports
+if (config.logging.enableFile) {
+  // Error log
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(config.logging.logDir, 'error.log'),
+      level: 'error',
+      format: fileFormat,
+      maxsize: config.logging.maxSize,
+      maxFiles: config.logging.maxFiles
+    })
+  );
+
+  // Combined log
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(config.logging.logDir, 'combined.log'),
+      format: fileFormat,
+      maxsize: config.logging.maxSize,
+      maxFiles: config.logging.maxFiles
+    })
+  );
+
+  // Debug log (only if debug level)
+  if (config.logging.level === 'debug') {
+    transports.push(
+      new winston.transports.File({
+        filename: path.join(config.logging.logDir, 'debug.log'),
+        level: 'debug',
+        format: fileFormat,
+        maxsize: config.logging.maxSize,
+        maxFiles: config.logging.maxFiles
+      })
+    );
+  }
+}
+
+// Create logger instance
+export const logger = winston.createLogger({
+  level: config.logging.level,
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true })
+  ),
+  transports,
+  exitOnError: false
 });
 
-// Create logs directory if it doesn't exist
-import fs from 'fs';
-if (!fs.existsSync('logs')) {
-  fs.mkdirSync('logs');
+// Add stream for Morgan HTTP logging if needed
+logger.stream = {
+  write: (message) => {
+    logger.info(message.trim());
+  }
+};
+
+// Dynamic log level changing
+export function setLogLevel(level) {
+  logger.level = level;
+  config.logging.level = level;
+  logger.info(`📊 Log level changed to: ${level}`);
 }
+
+// Log system info on startup
+logger.info(`🚀 Logger initialized - Level: ${config.logging.level}, Console: ${config.logging.enableConsole}, File: ${config.logging.enableFile}`);
