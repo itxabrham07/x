@@ -17,7 +17,8 @@ class InstagramBot {
 
   async login() {
     try {
-      const { username, password } = config.instagram;
+      const username = process.env.INSTAGRAM_USERNAME;
+      const password = process.env.INSTAGRAM_PASSWORD;
 
       if (!username) {
         throw new Error('❌ INSTAGRAM_USERNAME is missing');
@@ -28,19 +29,15 @@ class InstagramBot {
       // Try to load cookies first
       try {
         await this.loadCookiesFromJson('./cookies.json');
-        this.currentUser = await this.ig.account.currentUser();
-        logger.info('✅ Logged in using saved cookies');
+        await this.ig.account.currentUser();
+        this.log('INFO', '✅ Logged in using saved cookies');
       } catch (error) {
         if (!password) {
           throw new Error('❌ INSTAGRAM_PASSWORD is required for fresh login');
         }
-        logger.info('🔑 Attempting fresh login...');
+        this.log('INFO', '🔑 Attempting fresh login...');
         await this.ig.account.login(username, password);
-        this.currentUser = await this.ig.account.currentUser();
-        logger.info('✅ Fresh login successful');
-        
-        // Save cookies for next time
-        await this.saveCookiesToJson('./cookies.json');
+        this.log('INFO', '✅ Fresh login successful');
       }
 
       // Register handlers BEFORE connecting
@@ -51,13 +48,14 @@ class InstagramBot {
         irisData: await this.ig.feed.directInbox().request(),
       });
 
-      logger.info(`✅ Connected as @${this.currentUser.username} (ID: ${this.currentUser.pk})`);
+      const user = await this.ig.account.currentUser();
+      this.log('INFO', `✅ Connected as @${user.username} (ID: ${user.pk})`);
 
       this.isRunning = true;
-      logger.info('🚀 Instagram bot is now running and listening for messages');
+      this.log('INFO', '🚀 Instagram bot is now running and listening for messages');
 
     } catch (error) {
-      logger.error('❌ Failed to initialize Instagram bot:', error.message);
+      this.log('ERROR', '❌ Failed to initialize bot:', error.message);
       throw error;
     }
   }
