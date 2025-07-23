@@ -81,6 +81,7 @@ if (config.logging.enableFile) {
 // Create logger instance
 export const logger = winston.createLogger({
   level: config.logging.level,
+  silent: !config.logging.debug && config.logging.level === 'debug' ? true : false,
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     errors({ stack: true })
@@ -100,8 +101,22 @@ logger.stream = {
 export function setLogLevel(level) {
   logger.level = level;
   config.logging.level = level;
+  logger.silent = !config.logging.debug && level === 'debug' ? true : false;
   logger.info(`📊 Log level changed to: ${level}`);
 }
 
+// Debug control
+export function setDebugMode(enabled) {
+  config.logging.debug = enabled;
+  if (enabled) {
+    logger.level = 'debug';
+    logger.silent = false;
+  } else {
+    logger.level = 'info';
+    logger.silent = false;
+  }
+  logger.info(`🐛 Debug mode ${enabled ? 'enabled' : 'disabled'}`);
+}
+
 // Log system info on startup
-logger.info(`🚀 Logger initialized - Level: ${config.logging.level}, Console: ${config.logging.enableConsole}, File: ${config.logging.enableFile}`);
+logger.info(`🚀 Logger initialized - Level: ${config.logging.level}, Debug: ${config.logging.debug}, Console: ${config.logging.enableConsole}, File: ${config.logging.enableFile}`);

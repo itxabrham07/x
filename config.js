@@ -13,7 +13,7 @@ export const config = {
   instagram: {
     username: process.env.INSTAGRAM_USERNAME,
     password: process.env.INSTAGRAM_PASSWORD,
-    enabled: process.env.INSTAGRAM_ENABLED === 'true' || true,
+    enabled: process.env.INSTAGRAM_ENABLED !== 'false',
     sessionPath: './instagram_session.json',
     reconnectDelay: 5000,
     maxReconnectAttempts: 5
@@ -23,14 +23,14 @@ export const config = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     chatId: process.env.TELEGRAM_CHAT_ID,
-    enabled: process.env.TELEGRAM_ENABLED === 'true' || true,
+    enabled: process.env.TELEGRAM_ENABLED !== 'false',
     polling: true,
     webhookUrl: process.env.TELEGRAM_WEBHOOK_URL || null
   },
 
   // Bridge Configuration
   bridge: {
-    enabled: process.env.BRIDGE_ENABLED === 'true' || true,
+    enabled: process.env.BRIDGE_ENABLED !== 'false',
     autoCreateTopics: true,
     forwardMedia: true,
     forwardText: true,
@@ -40,7 +40,7 @@ export const config = {
 
   // Database Configuration
   database: {
-    enabled: process.env.DATABASE_ENABLED === 'true' || true,
+    enabled: process.env.DATABASE_ENABLED !== 'false',
     uri: process.env.MONGODB_URI,
     name: process.env.MONGODB_DB_NAME || 'telegram_instagram_bridge',
     options: {
@@ -54,9 +54,10 @@ export const config = {
 
   // Logging Configuration
   logging: {
-    level: process.env.LOG_LEVEL || 'info', // debug, info, warn, error
-    enableConsole: process.env.LOG_CONSOLE === 'true' || true,
-    enableFile: process.env.LOG_FILE === 'true' || true,
+    level: process.env.LOG_LEVEL || 'info',
+    debug: process.env.DEBUG === 'true',
+    enableConsole: process.env.LOG_CONSOLE !== 'false',
+    enableFile: process.env.LOG_FILE !== 'false',
     maxFiles: 5,
     maxSize: '10m',
     datePattern: 'YYYY-MM-DD',
@@ -65,7 +66,7 @@ export const config = {
 
   // Rate Limiting
   rateLimiting: {
-    enabled: process.env.RATE_LIMITING_ENABLED === 'true' || true,
+    enabled: process.env.RATE_LIMITING_ENABLED !== 'false',
     maxCommands: 10,
     windowMs: 60000, // 1 minute
     maxMessages: 50,
