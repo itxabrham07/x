@@ -23,10 +23,6 @@ class TelegramBotManager {
       this.isRunning = true;
       logger.info('✅ Telegram bot initialized and polling started');
       
-      // Test bot connection
-      const me = await this.bot.getMe();
-      logger.info(`🤖 Bot info: @${me.username} (${me.first_name})`);
-      
     } catch (error) {
       logger.error('❌ Failed to initialize Telegram bot:', error.message);
       throw error;
