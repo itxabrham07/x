@@ -1,0 +1,22 @@
+{
+  "name": "telegram-instagram-bridge",
+  "version": "1.0.0",
+  "description": "Bi-directional bridge between Telegram and Instagram",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "instagram-private-api": "^1.45.3",
+    "instagram_mqtt": "^2.0.0",
+    "node-telegram-bot-api": "^0.66.0",
+    "mongodb": "^6.3.0",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "axios": "^1.6.2",
+    "form-data": "^4.0.0",
+    "tough-cookie": "^4.1.3"
+  }
+}

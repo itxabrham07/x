@@ -1,8 +1,12 @@
+// Legacy config file - use .env instead
+// This file is kept for backward compatibility
+console.warn('⚠️ Using legacy config.js - please migrate to .env file');
+
 export const config = {
   instagram: {
-    username: 'itxrey', // Your Instagram username
-    password: 'your_instagram_password', // Your Instagram password
-    useMongoSession: true // Set to false to use file-based sessions
+    username: 'itxrey',
+    password: 'your_instagram_password',
+    useMongoSession: true
   },
   
   telegram: {
@@ -18,9 +22,8 @@ export const config = {
     dbName: 'hyper_insta',
   },
 
-  
   admin: {
-    users: ['itxrey', 'iarshman'] // Admin usernames
+    users: ['itxrey', 'iarshman']
   },
   
   app: {
